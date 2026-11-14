@@ -2,6 +2,113 @@ const DEFAULT_USERNAME = "miguelestradam3";
 const REPOSITORIES_PER_PAGE = 100;
 const CARDS_PER_PAGE = 24;
 
+const translations = {
+    en: {
+        pageTitle: "GitHub Project Explorer",
+        brandHome: "GitHub Project Explorer home",
+        brandName: "Project Explorer",
+        languageLabel: "Select language",
+        viewProfile: "View GitHub Profile",
+        eyebrow: "PUBLIC REPOSITORY DIRECTORY",
+        heroTitle: 'Explore my <span>GitHub projects.</span>',
+        heroDescription: "A live collection of public repositories, fetched directly from the GitHub API.",
+        usernameLabel: "GitHub username",
+        usernamePlaceholder: "Enter a GitHub username",
+        loadRepositories: "Load repositories",
+        loadingButton: "Loading...",
+        initialLoading: "Loading repositories...",
+        statsLabel: "Repository statistics",
+        repositories: "Repositories",
+        languages: "Languages",
+        totalStars: "Total stars",
+        collectionEyebrow: "THE COLLECTION",
+        repositoriesHeading: "Repositories",
+        searchLabel: "Search repositories",
+        searchPlaceholder: "Search by project name or description...",
+        languageFilterLabel: "Filter by language",
+        allLanguages: "All languages",
+        sortLabel: "Sort repositories",
+        sortUpdated: "Recently updated",
+        sortCreated: "Recently created",
+        sortStars: "Most stars",
+        sortName: "Name (A–Z)",
+        fetchingRepositories: "Fetching repositories from GitHub...",
+        noRepositories: "No repositories found",
+        tryAnotherSearch: "Try another search term or language filter.",
+        previous: "← Previous",
+        next: "Next →",
+        footerText: "Built with HTML, CSS, JavaScript, and the GitHub REST API.",
+        apiDocumentation: "GitHub API documentation ↗",
+        enterUsername: "Please enter a GitHub username.",
+        loadingUser: "Loading public repositories for {username}...",
+        loadedUser: "Successfully loaded {count} public repositories for {username}.",
+        userNotFound: 'GitHub user "{username}" was not found.',
+        rateLimit: "GitHub API rate limit reached. Please wait and try again later.",
+        apiError: "GitHub API error: {status} {statusText}",
+        unexpectedResponse: "GitHub returned an unexpected response.",
+        repository: "repository",
+        repositoryPlural: "repositories",
+        results: "{count} {label}",
+        page: "Page {current} of {total}",
+        public: "Public",
+        private: "Private",
+        noDescription: "No description provided for this repository.",
+        fork: "Fork"
+    },
+    es: {
+        pageTitle: "Explorador de Proyectos de GitHub",
+        brandHome: "Inicio del Explorador de Proyectos de GitHub",
+        brandName: "Explorador de Proyectos",
+        languageLabel: "Seleccionar idioma",
+        viewProfile: "Ver perfil de GitHub",
+        eyebrow: "DIRECTORIO DE REPOSITORIOS PÚBLICOS",
+        heroTitle: 'Explora mis <span>proyectos de GitHub.</span>',
+        heroDescription: "Una colección actualizada de repositorios públicos, obtenida directamente desde la API de GitHub.",
+        usernameLabel: "Usuario de GitHub",
+        usernamePlaceholder: "Ingresa un nombre de usuario de GitHub",
+        loadRepositories: "Cargar repositorios",
+        loadingButton: "Cargando...",
+        initialLoading: "Cargando repositorios...",
+        statsLabel: "Estadísticas de repositorios",
+        repositories: "Repositorios",
+        languages: "Lenguajes",
+        totalStars: "Estrellas totales",
+        collectionEyebrow: "LA COLECCIÓN",
+        repositoriesHeading: "Repositorios",
+        searchLabel: "Buscar repositorios",
+        searchPlaceholder: "Buscar por nombre o descripción del proyecto...",
+        languageFilterLabel: "Filtrar por lenguaje",
+        allLanguages: "Todos los lenguajes",
+        sortLabel: "Ordenar repositorios",
+        sortUpdated: "Actualizados recientemente",
+        sortCreated: "Creados recientemente",
+        sortStars: "Más estrellas",
+        sortName: "Nombre (A–Z)",
+        fetchingRepositories: "Obteniendo repositorios desde GitHub...",
+        noRepositories: "No se encontraron repositorios",
+        tryAnotherSearch: "Prueba con otro término de búsqueda o filtro de lenguaje.",
+        previous: "← Anterior",
+        next: "Siguiente →",
+        footerText: "Desarrollado con HTML, CSS, JavaScript y la API REST de GitHub.",
+        apiDocumentation: "Documentación de la API de GitHub ↗",
+        enterUsername: "Por favor, ingresa un nombre de usuario de GitHub.",
+        loadingUser: "Cargando repositorios públicos de {username}...",
+        loadedUser: "Se cargaron correctamente {count} repositorios públicos de {username}.",
+        userNotFound: 'No se encontró el usuario de GitHub "{username}".',
+        rateLimit: "Se alcanzó el límite de solicitudes de la API de GitHub. Espera e inténtalo de nuevo.",
+        apiError: "Error de la API de GitHub: {status} {statusText}",
+        unexpectedResponse: "GitHub devolvió una respuesta inesperada.",
+        repository: "repositorio",
+        repositoryPlural: "repositorios",
+        results: "{count} {label}",
+        page: "Página {current} de {total}",
+        public: "Público",
+        private: "Privado",
+        noDescription: "No se proporcionó una descripción para este repositorio.",
+        fork: "Derivado"
+    }
+};
+
 const usernameForm = document.querySelector("#username-form");
 const usernameInput = document.querySelector("#username-input");
 const loadButton = document.querySelector("#load-button");
@@ -14,6 +121,7 @@ const previousButton = document.querySelector("#previous-button");
 const nextButton = document.querySelector("#next-button");
 const pageIndicator = document.querySelector("#page-indicator");
 const emptyState = document.querySelector("#empty-state");
+const languageSelector = document.querySelector("#language-selector");
 
 const totalRepositories = document.querySelector("#total-repositories");
 const totalLanguages = document.querySelector("#total-languages");
@@ -23,14 +131,73 @@ const resultsCount = document.querySelector("#results-count");
 let allRepositories = [];
 let currentPage = 1;
 let activeUsername = DEFAULT_USERNAME;
+let currentLanguage = localStorage.getItem("githubExplorerLanguage") || "en";
+let lastStatus = { key: "initialLoading", params: {}, type: "" };
 
-// Load the username entered in the form.
-usernameForm.addEventListener("submit", async (event) => {
+if (!translations[currentLanguage]) {
+    currentLanguage = "en";
+}
+
+function translate(key, params = {}) {
+    let text = translations[currentLanguage][key] || translations.en[key] || key;
+
+    Object.entries(params).forEach(([name, value]) => {
+        text = text.replaceAll(`{${name}}`, String(value));
+    });
+
+    return text;
+}
+
+function applyTranslations() {
+    document.documentElement.lang = currentLanguage;
+    document.title = translate("pageTitle");
+    languageSelector.value = currentLanguage;
+
+    document.querySelectorAll("[data-i18n]").forEach(element => {
+        const key = element.dataset.i18n;
+
+        // The hero title intentionally contains a highlighted span.
+        if (key === "heroTitle") {
+            element.innerHTML = translate(key);
+        } else {
+            element.textContent = translate(key);
+        }
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+        element.placeholder = translate(element.dataset.i18nPlaceholder);
+    });
+
+    document.querySelectorAll("[data-i18n-aria]").forEach(element => {
+        element.setAttribute("aria-label", translate(element.dataset.i18nAria));
+    });
+
+    showStatus(lastStatus.key, lastStatus.type, lastStatus.params);
+    setLoading(loadButton.disabled);
+
+    if (allRepositories.length > 0) {
+        populateLanguageFilter(allRepositories);
+        renderRepositories();
+    } else {
+        resultsCount.textContent = translate("results", {
+            count: 0,
+            label: translate("repositoryPlural")
+        });
+    }
+}
+
+languageSelector.addEventListener("change", () => {
+    currentLanguage = languageSelector.value;
+    localStorage.setItem("githubExplorerLanguage", currentLanguage);
+    applyTranslations();
+});
+
+usernameForm.addEventListener("submit", async event => {
     event.preventDefault();
     const username = usernameInput.value.trim();
 
     if (!username) {
-        showStatus("Please enter a GitHub username.", "error");
+        showStatus("enterUsername", "error");
         usernameInput.focus();
         return;
     }
@@ -38,7 +205,6 @@ usernameForm.addEventListener("submit", async (event) => {
     await loadRepositories(username);
 });
 
-// Every filter change returns the results to page one.
 searchInput.addEventListener("input", handleFilterChange);
 languageFilter.addEventListener("change", handleFilterChange);
 sortSelect.addEventListener("change", handleFilterChange);
@@ -66,19 +232,16 @@ nextButton.addEventListener("click", () => {
 
 async function loadRepositories(username) {
     setLoading(true);
-    showStatus(`Loading public repositories for ${username}...`);
-    projectsGrid.innerHTML = '<div class="loading-card">Fetching repositories from GitHub...</div>';
+    showStatus("loadingUser", "", { username });
+    projectsGrid.innerHTML = `<div class="loading-card">${translate("fetchingRepositories")}</div>`;
     emptyState.classList.add("hidden");
 
     try {
         const repositories = await fetchAllRepositories(username);
 
-        // Replace the current data only after the complete request succeeds.
         allRepositories = repositories;
         activeUsername = username;
         currentPage = 1;
-
-        // Reset old filter values when switching to another GitHub account.
         searchInput.value = "";
         languageFilter.value = "";
         sortSelect.value = "updated";
@@ -88,29 +251,28 @@ async function loadRepositories(username) {
         enableFilters();
         renderRepositories();
 
-        showStatus(
-            `Successfully loaded ${allRepositories.length} public repositories for ${activeUsername}.`,
-            "success"
-        );
+        showStatus("loadedUser", "success", {
+            count: allRepositories.length,
+            username: activeUsername
+        });
     } catch (error) {
         allRepositories = [];
         updateStatistics([]);
-        projectsGrid.innerHTML = "";
-        resultsCount.textContent = "0 repositories";
-        pageIndicator.textContent = "Page 1 of 1";
+        projectsGrid.replaceChildren();
+        resultsCount.textContent = translate("results", {
+            count: 0,
+            label: translate("repositoryPlural")
+        });
+        pageIndicator.textContent = translate("page", { current: 1, total: 1 });
         previousButton.disabled = true;
         nextButton.disabled = true;
         emptyState.classList.add("hidden");
-        showStatus(error.message, "error");
+        showStatus(error.key || "unexpectedResponse", "error", error.params || {});
     } finally {
         setLoading(false);
     }
 }
 
-/*
- * GitHub returns at most 100 repositories per request. Keep requesting pages
- * until a page contains fewer than 100 results so no repositories are missed.
- */
 async function fetchAllRepositories(username) {
     const repositories = [];
     let page = 1;
@@ -129,23 +291,24 @@ async function fetchAllRepositories(username) {
         const response = await fetch(apiUrl.toString());
 
         if (response.status === 404) {
-            throw new Error(`GitHub user "${username}" was not found.`);
+            throw { key: "userNotFound", params: { username } };
         }
 
         if (response.status === 403 || response.status === 429) {
-            throw new Error(
-                "GitHub API rate limit reached. Please wait and try again later."
-            );
+            throw { key: "rateLimit", params: {} };
         }
 
         if (!response.ok) {
-            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+            throw {
+                key: "apiError",
+                params: { status: response.status, statusText: response.statusText }
+            };
         }
 
         const pageRepositories = await response.json();
 
         if (!Array.isArray(pageRepositories)) {
-            throw new Error("GitHub returned an unexpected response.");
+            throw { key: "unexpectedResponse", params: {} };
         }
 
         repositories.push(...pageRepositories);
@@ -189,7 +352,7 @@ function populateLanguageFilter(repositories) {
 
     const allLanguagesOption = document.createElement("option");
     allLanguagesOption.value = "";
-    allLanguagesOption.textContent = "All languages";
+    allLanguagesOption.textContent = translate("allLanguages");
     languageFilter.appendChild(allLanguagesOption);
 
     languages.forEach(language => {
@@ -199,7 +362,6 @@ function populateLanguageFilter(repositories) {
         languageFilter.appendChild(option);
     });
 
-    // Keep the selected language if it exists for the newly loaded account.
     languageFilter.value = languages.includes(previousLanguage) ? previousLanguage : "";
 }
 
@@ -224,15 +386,12 @@ function getFilteredRepositories() {
             .toLocaleLowerCase();
 
         const matchesSearch = searchableText.includes(searchTerm);
-        
-        // Robust case-insensitive and trimmed language match
-        const matchesLanguage = !selectedLanguage || 
+        const matchesLanguage = !selectedLanguage ||
             (repository.language && repository.language.trim().toLowerCase() === selectedLanguage.trim().toLowerCase());
 
         return matchesSearch && matchesLanguage;
     });
 
-    // Sort a new filtered array, leaving the original API data untouched.
     filteredRepositories.sort((first, second) => {
         if (sortMethod === "created") {
             return getTimestamp(second.created_at) - getTimestamp(first.created_at);
@@ -266,8 +425,6 @@ function getTotalPages(repositoryCount) {
 function renderRepositories() {
     const filteredRepositories = getFilteredRepositories();
     const totalPages = getTotalPages(filteredRepositories.length);
-
-    // Keep the current page valid after a filter reduces the result count.
     currentPage = Math.min(Math.max(currentPage, 1), totalPages);
 
     const startIndex = (currentPage - 1) * CARDS_PER_PAGE;
@@ -277,8 +434,13 @@ function renderRepositories() {
     );
 
     projectsGrid.replaceChildren();
-    resultsCount.textContent =
-        `${filteredRepositories.length} ${filteredRepositories.length === 1 ? "repository" : "repositories"}`;
+    const resultLabel = filteredRepositories.length === 1
+        ? translate("repository")
+        : translate("repositoryPlural");
+    resultsCount.textContent = translate("results", {
+        count: filteredRepositories.length,
+        label: resultLabel
+    });
 
     if (visibleRepositories.length === 0) {
         emptyState.classList.remove("hidden");
@@ -289,7 +451,10 @@ function renderRepositories() {
         });
     }
 
-    pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    pageIndicator.textContent = translate("page", {
+        current: currentPage,
+        total: totalPages
+    });
     previousButton.disabled = currentPage === 1;
     nextButton.disabled = currentPage === totalPages;
 }
@@ -308,7 +473,7 @@ function createRepositoryCard(repository) {
 
     const visibility = document.createElement("span");
     visibility.className = "visibility";
-    visibility.textContent = repository.private ? "Private" : "Public";
+    visibility.textContent = repository.private ? translate("private") : translate("public");
     cardTop.append(projectIcon, visibility);
 
     const title = document.createElement("h3");
@@ -321,7 +486,7 @@ function createRepositoryCard(repository) {
 
     const description = document.createElement("p");
     description.className = "project-description";
-    description.textContent = repository.description || "No description provided for this repository.";
+    description.textContent = repository.description || translate("noDescription");
 
     const footer = document.createElement("div");
     footer.className = "card-footer";
@@ -349,7 +514,7 @@ function createRepositoryCard(repository) {
     if (repository.fork) {
         const forkLabel = document.createElement("span");
         forkLabel.className = "card-meta";
-        forkLabel.textContent = "Fork";
+        forkLabel.textContent = translate("fork");
         footer.appendChild(forkLabel);
     }
 
@@ -365,13 +530,15 @@ function enableFilters() {
 
 function setLoading(isLoading) {
     loadButton.disabled = isLoading;
-    loadButton.textContent = isLoading ? "Loading..." : "Load repositories";
+    loadButton.textContent = isLoading ? translate("loadingButton") : translate("loadRepositories");
 }
 
-function showStatus(message, type = "") {
-    statusMessage.textContent = message;
+function showStatus(key, type = "", params = {}) {
+    lastStatus = { key, type, params };
+    statusMessage.textContent = translate(key, params);
     statusMessage.className = `status-message ${type}`.trim();
 }
 
-// Automatically load the profile when the page opens.
+// Apply the saved language before loading the initial GitHub profile.
+applyTranslations();
 loadRepositories(DEFAULT_USERNAME);

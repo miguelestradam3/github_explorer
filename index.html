@@ -15,47 +15,56 @@
 <body>
     <header class="site-header">
         <div class="container header-content">
-            <a class="brand" href="#" aria-label="GitHub Project Explorer home">
+            <a class="brand" href="#" aria-label="GitHub Project Explorer home" data-i18n-aria="brandHome">
                 <span class="brand-mark">GH</span>
-                <span>Project Explorer</span>
+                <span data-i18n="brandName">Project Explorer</span>
             </a>
-            <a class="github-link" href="https://github.com/miguelestradam3" target="_blank" rel="noopener noreferrer">
-                View GitHub Profile <span aria-hidden="true">↗</span>
-            </a>
+            <div class="header-actions">
+                <label class="language-picker" for="language-selector">
+                    <span class="sr-only" data-i18n="languageLabel">Select language</span>
+                    <select id="language-selector" aria-label="Select language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                    </select>
+                </label>
+                <a class="github-link" href="https://github.com/miguelestradam3" target="_blank" rel="noopener noreferrer">
+                    <span data-i18n="viewProfile">View GitHub Profile</span> <span aria-hidden="true">↗</span>
+                </a>
+            </div>
         </div>
     </header>
 
     <main class="container">
         <section class="hero">
-            <p class="eyebrow">PUBLIC REPOSITORY DIRECTORY</p>
-            <h1>Explore my <span>GitHub projects.</span></h1>
-            <p class="hero-description">
+            <p class="eyebrow" data-i18n="eyebrow">PUBLIC REPOSITORY DIRECTORY</p>
+            <h1 data-i18n="heroTitle">Explore my <span>GitHub projects.</span></h1>
+            <p class="hero-description" data-i18n="heroDescription">
                 A live collection of public repositories, fetched directly from the GitHub API.
             </p>
 
             <form id="username-form" class="profile-form">
-                <label class="sr-only" for="username-input">GitHub username</label>
+                <label class="sr-only" for="username-input" data-i18n="usernameLabel">GitHub username</label>
                 <input id="username-input" name="username" type="text" value="miguelestradam3"
-                       placeholder="Enter a GitHub username" autocomplete="off" required>
-                <button type="submit" id="load-button">Load repositories</button>
+                       placeholder="Enter a GitHub username" data-i18n-placeholder="usernamePlaceholder" autocomplete="off" required>
+                <button type="submit" id="load-button" data-i18n="loadRepositories">Load repositories</button>
             </form>
 
             <div id="status-message" class="status-message" role="status" aria-live="polite">
-                Loading repositories...
+                <span data-i18n="initialLoading">Loading repositories...</span>
             </div>
         </section>
 
-        <section class="stats-grid" aria-label="Repository statistics">
+        <section class="stats-grid" aria-label="Repository statistics" data-i18n-aria="statsLabel">
             <article class="stat-card">
-                <span class="stat-label">Repositories</span>
+                <span class="stat-label" data-i18n="repositories">Repositories</span>
                 <strong id="total-repositories">—</strong>
             </article>
             <article class="stat-card">
-                <span class="stat-label">Languages</span>
+                <span class="stat-label" data-i18n="languages">Languages</span>
                 <strong id="total-languages">—</strong>
             </article>
             <article class="stat-card">
-                <span class="stat-label">Total stars</span>
+                <span class="stat-label" data-i18n="totalStars">Total stars</span>
                 <strong id="total-stars">—</strong>
             </article>
         </section>
@@ -63,58 +72,59 @@
         <section class="projects-section">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">THE COLLECTION</p>
-                    <h2>Repositories</h2>
+                    <p class="eyebrow" data-i18n="collectionEyebrow">THE COLLECTION</p>
+                    <h2 data-i18n="repositoriesHeading">Repositories</h2>
                 </div>
                 <span id="results-count" class="results-count"></span>
             </div>
 
             <div class="filters">
                 <div class="search-field">
-                    <label class="sr-only" for="search-input">Search repositories</label>
+                    <label class="sr-only" for="search-input" data-i18n="searchLabel">Search repositories</label>
                     <span aria-hidden="true">⌕</span>
-                    <input id="search-input" type="search" placeholder="Search by project name or description..." disabled>
+                    <input id="search-input" type="search" placeholder="Search by project name or description..."
+                           data-i18n-placeholder="searchPlaceholder" disabled>
                 </div>
                 <label class="filter-control">
-                    <span class="sr-only">Filter by language</span>
+                    <span class="sr-only" data-i18n="languageFilterLabel">Filter by language</span>
                     <select id="language-filter" disabled>
-                        <option value="">All languages</option>
+                        <option value="" data-i18n="allLanguages">All languages</option>
                     </select>
                 </label>
                 <label class="filter-control">
-                    <span class="sr-only">Sort repositories</span>
+                    <span class="sr-only" data-i18n="sortLabel">Sort repositories</span>
                     <select id="sort-select" disabled>
-                        <option value="updated">Recently updated</option>
-                        <option value="created">Recently created</option>
-                        <option value="stars">Most stars</option>
-                        <option value="name">Name (A–Z)</option>
+                        <option value="updated" data-i18n="sortUpdated">Recently updated</option>
+                        <option value="created" data-i18n="sortCreated">Recently created</option>
+                        <option value="stars" data-i18n="sortStars">Most stars</option>
+                        <option value="name" data-i18n="sortName">Name (A–Z)</option>
                     </select>
                 </label>
             </div>
 
             <div id="projects-grid" class="projects-grid">
-                <div class="loading-card">Fetching repositories from GitHub...</div>
+                <div class="loading-card" data-i18n="fetchingRepositories">Fetching repositories from GitHub...</div>
             </div>
 
             <div id="empty-state" class="empty-state hidden">
                 <span class="empty-icon">⌕</span>
-                <h3>No repositories found</h3>
-                <p>Try another search term or language filter.</p>
+                <h3 data-i18n="noRepositories">No repositories found</h3>
+                <p data-i18n="tryAnotherSearch">Try another search term or language filter.</p>
             </div>
 
             <div class="pagination">
-                <button id="previous-button" class="secondary-button" type="button" disabled>← Previous</button>
+                <button id="previous-button" class="secondary-button" type="button" disabled data-i18n="previous">← Previous</button>
                 <span id="page-indicator">Page 1</span>
-                <button id="next-button" class="secondary-button" type="button" disabled>Next →</button>
+                <button id="next-button" class="secondary-button" type="button" disabled data-i18n="next">Next →</button>
             </div>
         </section>
     </main>
 
     <footer class="site-footer">
         <div class="container footer-content">
-            <p>Built with HTML, CSS, JavaScript, and the GitHub REST API.</p>
+            <p data-i18n="footerText">Built with HTML, CSS, JavaScript, and the GitHub REST API.</p>
             <a href="https://docs.github.com/en/rest/repos/repos#list-repositories-for-a-user"
-               target="_blank" rel="noopener noreferrer">GitHub API documentation ↗</a>
+               target="_blank" rel="noopener noreferrer" data-i18n="apiDocumentation">GitHub API documentation ↗</a>
         </div>
     </footer>
 </body>

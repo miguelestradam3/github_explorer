@@ -11,6 +11,8 @@ A responsive HTML, CSS, and vanilla JavaScript application that retrieves and di
 - Displays repository descriptions, language, stars, forks, and visibility.
 - Shows summary statistics for repository count, languages, and stars.
 - Responsive layout for desktop, tablet, and mobile.
+- English and Spanish interface translations with a language selector.
+- Remembers the selected language with `localStorage`.
 - No API key or authentication required for public repositories.
 
 ## Technologies
@@ -26,6 +28,12 @@ A responsive HTML, CSS, and vanilla JavaScript application that retrieves and di
 2. Open `index.html` in your browser.
 
 For a local development server, you can use the VS Code Live Server extension.
+
+## Change the interface language
+
+Use the language selector in the top-right corner to switch between English and Spanish. The selected language is saved in the browser, so it is restored the next time the page is opened.
+
+To add or edit translations, update the `translations` object near the top of `js/app.js`.
 
 ## Change the default GitHub account
 
